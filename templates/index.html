@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATS Resume Screener</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin-top: 10px;
+        font-family: "Poppins", sans-serif;
+        background-color: #f4f7fb;
+      }
+
+      .navbar {
+        border-radius: 0;
+        background-color: #f4f7fb; /* Match layout background */
+        border-radius: 0; /* Remove rounding */
+        box-shadow: none; /* Remove shadow for a flat look */
+      }
+
+      .navbar-brand span {
+        color: #074799; /* Add a distinct color for the brand text */
+      }
+
+      .nav-link {
+        font-weight: 500;
+        color: #495057; /* Text color for navbar links */
+      }
+
+      .nav-link:hover {
+        color: #074799; /* Highlight on hover */
+      }
+
+      .nav-link.text-danger {
+        color: #dc3545; /* Preserve the red for the logout link */
+      }
+
+      h1 {
+        color: #343a40;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .form-select,
+      .form-control {
+        border-radius: 10px;
+      }
+
+      .btn-primary {
+        background: #007bff;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 25px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+
+      .btn-primary:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+      }
+
+      textarea {
+        resize: none;
+        border-radius: 10px;
+      }
+
+      .btn-upload {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .analyze-animation {
+        display: none;
+        margin-top: 15px;
+        text-align: center;
+        font-weight: 600;
+        color: #007bff;
+        animation: fadeIn 1s ease-in-out infinite;
+      }
+
+      @keyframes fadeIn {
+        0%,
+        100% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .card {
+        border: none;
+        background-color: #f4f7fb;
+      }
+
+      .card-header {
+        background: #074799;
+        color: #fff;
+        font-size: 20px;
+        text-align: center;
+        border-radius: 10px 10px 0 0;
+        padding: 15px;
+      }
+    </style>
+    <script>
+      function addTextarea(containerId) {
+        // JS for dynamically adding text areas
+      }
+
+      function showLoadingAnimation(event) {
+        event.preventDefault();
+        const positionSelect = document.getElementById("position-name");
+        if (!positionSelect.value) {
+          alert("Please select a position name before analyzing resumes.");
+          return;
+        }
+
+        const animationDiv = document.querySelector(".analyze-animation");
+        animationDiv.style.display = "block";
+
+        setTimeout(() => {
+          event.target.form.submit();
+        }, 2000);
+      }
+    </script>
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <!-- <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm"> -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <!-- Logo and App Title -->
+        <a class="navbar-brand d-flex align-items-center" href="#">
+          <img
+            src="{{ url_for('static', filename='images/beyond_the_basic_logo.png') }}"
+            alt="Logo"
+            width="80s"
+            height="80s"
+            class="rounded-circle d-inline-block align-text-top me-2"
+          />
+          <span class="fw-bold">Beyond the Basics</span>
+        </a>
+
+        <!-- Toggler for mobile view -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            {% if session['role'] == 'admin' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('get_position') }}"
+                >Position Manager</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('users') }}"
+                >Users Manager</a
+              >
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link text-danger" href="{{ url_for('logout') }}"
+                >Logout</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-3">
+      <div class="card">
+        <div class="card-header">ATS Resume Screener</div>
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-4">
+              <label for="position-name" class="form-label"
+                >Select Position</label
+              >
+              <select
+                class="form-select"
+                id="position-name"
+                name="position-id"
+                required
+              >
+                <option value="" disabled selected>Positions</option>
+                {% for position in positions %}
+                <option value="{{ position.id }}">{{ position.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label for="files" class="form-label"
+                >Upload Resumes (PDF only)</label
+              >
+              <input
+                class="form-control"
+                type="file"
+                name="files[]"
+                id="files"
+                multiple
+              />
+            </div>
+
+            <div class="btn-upload">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                onclick="showLoadingAnimation(event)"
+              >
+                Analyze Resumes
+              </button>
+            </div>
+
+            <div class="analyze-animation">
+              <i class="bi bi-hourglass-split"></i> Analyzing documents...
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
