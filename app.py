@@ -20,7 +20,8 @@ from functools import wraps
 
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = "uploads"
+# app.config["UPLOAD_FOLDER"] = "uploads"
+app.config["UPLOAD_FOLDER"] = "/tmp/uploads"
 app.config["ALLOWED_EXTENSIONS"] = {"pdf"}
 app.secret_key = "SECRETT_KEY"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///screener_app.db"
